@@ -33,10 +33,27 @@ function memrel_civicrm_install() {
 /**
  * Implements hook_civicrm_postInstall().
  *
+ * After the membership_conferment relationship is installed, update all
+ * membership types currently using "primary contact" for conferment to this.
+ *
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_postInstall
  */
 function memrel_civicrm_postInstall() {
   _memrel_civix_civicrm_postInstall();
+
+  $primaryContactRelTypeId = 32;
+  $confermentRelTypeId = civicrm_api3('RelationshipType', 'getvalue', array(
+    'return' => 'id',
+    'name_a_b' => 'membership_conferment',
+    'name_b_a' => 'membership_conferment',
+  ));
+
+  civicrm_api3('MembershipType', 'get', array(
+    'relationship_type_id' => $primaryContactRelTypeId,
+    'api.MembershipType.create' => array(
+      'relationship_type_id' => $confermentRelTypeId,
+    ),
+  ));
 }
 
 /**
