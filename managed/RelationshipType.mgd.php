@@ -17,6 +17,7 @@ return array(
     'name' => 'Membership by Relationship - Conferment Relationship Type',
     'entity' => 'RelationshipType',
     'params' => array(
+      'version' => 3,
       'name_a_b' => 'membership_conferment',
       'name_b_a' => 'membership_conferment',
       'label_a_b' => E::ts('Membership Conferment'),
