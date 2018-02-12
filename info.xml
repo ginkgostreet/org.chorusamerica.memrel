@@ -1,26 +1,30 @@
 <?xml version="1.0"?>
 <extension key="org.chorusamerica.memrel" type="module">
   <file>memrel</file>
-  <name>FIXME</name>
-  <description>FIXME</description>
+  <name>Membership by Relationship</name>
+  <description>
+    Allows an administrator to specify a list of relationships which should
+    confer membership from an organization to an individual, and creates a
+    "shadow" relationship of type "membership conferment" to do so.
+  </description>
   <license>AGPL-3.0</license>
   <maintainer>
     <author>Ginkgo Street Labs</author>
     <email>support@ginkgostreet.com</email>
   </maintainer>
   <urls>
-    <url desc="Main Extension Page">http://FIXME</url>
-    <url desc="Documentation">http://FIXME</url>
-    <url desc="Support">http://FIXME</url>
     <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
   </urls>
   <releaseDate>2018-02-12</releaseDate>
-  <version>1.0</version>
-  <develStage>alpha</develStage>
+  <version>0.1</version>
   <compatibility>
     <ver>4.7</ver>
   </compatibility>
-  <comments>This is a new, undeveloped module</comments>
+  <comments>
+    On installation, this extension will create a relationship type "membership
+    conferment" and update every membership type which confers membership to use
+    this relationship type.
+  </comments>
   <civix>
     <namespace>CRM/Memrel</namespace>
   </civix>
