@@ -8,16 +8,33 @@ use CRM_Memrel_ExtensionUtil as E;
  * @see https://wiki.civicrm.org/confluence/display/CRMDOC/QuickForm+Reference
  */
 class CRM_Memrel_Form_Settings extends CRM_Core_Form {
-  public function buildQuickForm() {
 
-    // add form elements
-    $this->add(
-      'select', // field type
-      'favorite_color', // field name
-      'Favorite Color', // field label
-      $this->getColorOptions(), // list of options
-      TRUE // is required
+  private $shadowRelationshipTypeId;
+
+  public function setDefaultValues() {
+    return array(
+      'memrel_mapping' => Civi::settings()->get('memrel_mapping'),
     );
+  }
+
+  public function buildQuickForm() {
+    // in case the need arises to do multiple mappings, the fields will be keyed
+    // by the ID of the "shadow" relationship type
+    $fieldName = 'memrel_mapping[' . $this->getShadowRelationshipTypeId() . ']';
+    $this->addEntityRef($fieldName, E::ts('Membership-Conferring Relationship Types'), array(
+        'entity' => 'RelationshipType',
+        'api' => array(
+          // avoid loop -- don't allow selection of the "shadow" relationship itself
+          'params' => array(
+            'name_a_b' => array('!=' => 'membership_conferment'),
+            'name_b_a' => array('!=' => "membership_conferment"),
+          ),
+        ),
+        'multiple' => TRUE,
+        'select' => array('minimumInputLength' => 0,),
+      ), TRUE
+    );
+
     $this->addButtons(array(
       array(
         'type' => 'submit',
@@ -33,25 +50,36 @@ class CRM_Memrel_Form_Settings extends CRM_Core_Form {
 
   public function postProcess() {
     $values = $this->exportValues();
-    $options = $this->getColorOptions();
-    CRM_Core_Session::setStatus(E::ts('You picked color "%1"', array(
-      1 => $options[$values['favorite_color']],
-    )));
+    // the entityRef/select2 widget (at least in the current version) gives us
+    // a comma-separated string
+    foreach ($values['memrel_mapping'] as &$selections) {
+      if (!is_array($selections)) {
+        $selections = explode(',', $selections);
+      }
+    }
+
+    Civi::settings()->set('memrel_mapping', $values['memrel_mapping']);
+
     parent::postProcess();
   }
 
-  public function getColorOptions() {
-    $options = array(
-      '' => E::ts('- select -'),
-      '#f00' => E::ts('Red'),
-      '#0f0' => E::ts('Green'),
-      '#00f' => E::ts('Blue'),
-      '#f0f' => E::ts('Purple'),
-    );
-    foreach (array('1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e') as $f) {
-      $options["#{$f}{$f}{$f}"] = E::ts('Grey (%1)', array(1 => $f));
+  /**
+   * Returns the ID of the "shadow" relationship type that the user selections
+   * will be mapped to.
+   *
+   * @return int
+   */
+  protected function getShadowRelationshipTypeId() {
+
+    if (!isset($this->shadowRelationshipTypeId)) {
+      $this->shadowRelationshipTypeId = (int) civicrm_api3('RelationshipType', 'getvalue', array(
+        'return' => 'id',
+        'name_a_b' => 'membership_conferment',
+        'name_b_a' => 'membership_conferment',
+      ));
     }
-    return $options;
+
+    return $this->shadowRelationshipTypeId;
   }
 
   /**

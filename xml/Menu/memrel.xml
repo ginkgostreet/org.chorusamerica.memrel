@@ -3,7 +3,7 @@
   <item>
     <path>civicrm/admin/member/memrel</path>
     <page_callback>CRM_Memrel_Form_Settings</page_callback>
-    <title>Settings</title>
-    <access_arguments>access CiviCRM</access_arguments>
+    <title>Global Settings for Membership by Relationship</title>
+    <access_arguments>administer CiviCRM</access_arguments>
   </item>
 </menu>
