@@ -18,12 +18,15 @@ class CRM_Memrel_Utils {
   }
 
   /**
+   * Returns the ID of the conferment relationship type associated with the
+   * specified relationship type.
+   *
    * @param string $relTypeId
    *   The ID of the relationship type which may need shadowing.
    * @return string|FALSE
    *   String ID or FALSE if the relationship type is not configured for conferment.
    */
-  public static function getConfermentRelTypeId($relTypeId) {
+  public static function getAssocConfermentRelTypeId($relTypeId) {
 
   }
 
@@ -37,6 +40,19 @@ class CRM_Memrel_Utils {
    */
   public static function getConfermentRelationshipId($contactA, $contactB) {
 
+  }
+
+  /**
+   * Returns the ID of the relationship type installed by this extension.
+   *
+   * @return int
+   */
+  public static function getConfermentRelTypeId() {
+    return (int) civicrm_api3('RelationshipType', 'getvalue', array(
+      'return' => 'id',
+      'name_a_b' => 'membership_conferment',
+      'name_b_a' => 'membership_conferment',
+    ));
   }
 
   /**

@@ -42,11 +42,7 @@ function memrel_civicrm_postInstall() {
   _memrel_civix_civicrm_postInstall();
 
   $primaryContactRelTypeId = 32;
-  $confermentRelTypeId = civicrm_api3('RelationshipType', 'getvalue', array(
-    'return' => 'id',
-    'name_a_b' => 'membership_conferment',
-    'name_b_a' => 'membership_conferment',
-  ));
+  $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
 
   civicrm_api3('MembershipType', 'get', array(
     'relationship_type_id' => $primaryContactRelTypeId,

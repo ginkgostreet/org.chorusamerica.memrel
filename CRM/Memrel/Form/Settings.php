@@ -73,11 +73,7 @@ class CRM_Memrel_Form_Settings extends CRM_Core_Form {
   protected function getShadowRelationshipTypeId() {
 
     if (!isset($this->shadowRelationshipTypeId)) {
-      $this->shadowRelationshipTypeId = (int) civicrm_api3('RelationshipType', 'getvalue', array(
-        'return' => 'id',
-        'name_a_b' => 'membership_conferment',
-        'name_b_a' => 'membership_conferment',
-      ));
+      $this->shadowRelationshipTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
     }
 
     return $this->shadowRelationshipTypeId;
