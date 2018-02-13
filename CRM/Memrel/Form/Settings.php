@@ -59,6 +59,7 @@ class CRM_Memrel_Form_Settings extends CRM_Core_Form {
     }
 
     Civi::settings()->set('memrel_mapping', $values['memrel_mapping']);
+    CRM_Core_Session::setStatus(E::ts('Saved'), NULL, 'success');
 
     parent::postProcess();
   }
