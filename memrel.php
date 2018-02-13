@@ -140,30 +140,18 @@ function memrel_civicrm_alterSettingsFolders(&$metaDataFolders = NULL) {
   _memrel_civix_civicrm_alterSettingsFolders($metaDataFolders);
 }
 
-// --- Functions below this ship commented out. Uncomment as required. ---
-
-/**
- * Implements hook_civicrm_preProcess().
- *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_preProcess
- *
-function memrel_civicrm_preProcess($formName, &$form) {
-
-} // */
-
 /**
  * Implements hook_civicrm_navigationMenu().
  *
- * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_navigationMenu
- *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_navigationMenu/
+ */
 function memrel_civicrm_navigationMenu(&$menu) {
-  _memrel_civix_insert_navigation_menu($menu, NULL, array(
-    'label' => E::ts('The Page'),
-    'name' => 'the_page',
-    'url' => 'civicrm/the-page',
-    'permission' => 'access CiviReport,access CiviContribute',
-    'operator' => 'OR',
-    'separator' => 0,
+  _memrel_civix_insert_navigation_menu($menu, 'Administer/CiviMember', array(
+    'label' => E::ts('Membership by Relationship'),
+    'name' => 'memrel',
+    'url' => 'civicrm/admin/member/memrel',
+    'permission' => 'administer CiviCRM',
+    'separator' => 1,
   ));
   _memrel_civix_navigationMenu($menu);
-} // */
+}
