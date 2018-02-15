@@ -181,4 +181,67 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     $this->assertFalse($result);
   }
 
+  /**
+   * Test that qualifying relationships are found if contact IDs
+   * are passed to the lookup function in the correct A/B order.
+   */
+  public function test_success_contactsInProvidedOrder_qualifyingRelationshipExists() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $this->getRelTypeId('test_exec'),
+    ));
+    $this->assertTrue(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
+  }
+
+  /**
+   * Test that the qualifying relationships are found if contact IDs
+   * are passed to the lookup function in reversed A/B order (e.g., the B
+   * contact is passed as the first contact).
+   */
+  public function test_success_contactsInReversedOrder_qualifyingRelationshipExists() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $this->getRelTypeId('test_exec'),
+    ));
+    // note that the order of arguments 2 and 3 is the only difference from
+    // test_success_contactsInProvidedOrder_qualifyingRelationshipExists()
+    $this->assertTrue(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $b, $a));
+  }
+
+  public function test_failure_noRel_qualifyingRelationshipExists() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $this->assertFalse(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
+  }
+
+  /**
+   * Test that inactive relationships don't qualify for membership.
+   */
+  public function test_failure_relIsInactive_qualifyingRelationshipExists() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => FALSE,
+      'relationship_type_id' => $this->getRelTypeId('test_exec'),
+    ));
+    $this->assertFalse(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
+  }
+
+  /**
+   * Test that the lookup safely returns (rather than causing an API exception)
+   * if the passed $confermentRelTypeId isn't configured.
+   */
+  public function test_failure_badConfig_qualifyingRelationshipExists() {
+    list($a, $b) = $this->createContacts();
+    $this->assertFalse(CRM_Memrel_Utils::qualifyingRelationshipExists($this->getRelTypeId('test_exec'), $a, $b));
+  }
+
 }

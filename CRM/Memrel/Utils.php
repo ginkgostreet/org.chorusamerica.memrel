@@ -101,7 +101,32 @@ class CRM_Memrel_Utils {
    * @return bool
    */
   public static function qualifyingRelationshipExists($confermentRelTypeId, $contactA, $contactB) {
+    $qualifyingRelTypeIds = CRM_Utils_Array::value($confermentRelTypeId, Civi::settings()->get('memrel_mapping'), array());
+    if (!count($qualifyingRelTypeIds)) {
+      return FALSE;
+    }
 
+    $params = array(
+      'is_active' => TRUE,
+      'relationship_type_id' => array('IN' => $qualifyingRelTypeIds),
+    );
+
+    $api = civicrm_api3('Relationship', 'get', $params + array(
+      'contact_id_a' => $contactA,
+      'contact_id_b' => $contactB,
+    ));
+    $result = ($api['count'] > 0);
+
+    // No dice? Try again with the contacts in reverse order.
+    if (!$result) {
+      $api = civicrm_api3('Relationship', 'get', $params + array(
+        'contact_id_a' => $contactB,
+        'contact_id_b' => $contactA,
+      ));
+      $result = ($api['count'] > 0);
+    }
+
+    return $result;
   }
 
 }
