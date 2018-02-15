@@ -38,6 +38,11 @@ class CRM_Memrel_Utils {
   }
 
   /**
+   * Returns the ID of the instance of the specified relationship type between
+   * two contacts.
+   *
+   * @param mixed $relTypeId
+   *   The ID of the relationship type to filter by.
    * @param string $contactA
    *   Contact ID.
    * @param string $contactB
@@ -45,8 +50,32 @@ class CRM_Memrel_Utils {
    * @return string|FALSE
    *   Relationship ID or FALSE if none exists.
    */
-  public static function getConfermentRelationshipId($contactA, $contactB) {
+  public static function getConfermentRelationshipId($relTypeId, $contactA, $contactB) {
+    $params = array(
+      'return' => 'id',
+      'relationship_type_id' => $relTypeId,
+    );
 
+    try {
+      $result = civicrm_api3('Relationship', 'getvalue', $params + array(
+        'contact_id_a' => $contactA,
+        'contact_id_b' => $contactB,
+      ));
+    }
+    catch (CiviCRM_API3_Exception $e) {
+      // No dice? Try again with the contacts in reverse order.
+      try {
+        $result = civicrm_api3('Relationship', 'getvalue', $params + array(
+          'contact_id_a' => $contactB,
+          'contact_id_b' => $contactA,
+        ));
+      }
+      catch (CiviCRM_API3_Exception $e) {
+        $result = FALSE;
+      }
+    }
+
+    return $result;
   }
 
   /**

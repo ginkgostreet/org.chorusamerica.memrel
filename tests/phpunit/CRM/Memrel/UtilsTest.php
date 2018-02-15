@@ -77,6 +77,19 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     return $this->relTypeIds[$name];
   }
 
+  private function createContacts() {
+    $contactA = civicrm_api3('Contact', 'create', array(
+      'contact_type' => 'Individual',
+      'first_name' => 'A',
+    ));
+    $contactB = civicrm_api3('Contact', 'create', array(
+      'contact_type' => 'Individual',
+      'first_name' => 'B',
+    ));
+
+    return array($contactA['id'], $contactB['id']);
+  }
+
   /**
    * Test that we can get the "shadow" relationship type for a relationship type
    * configured to confer membership.
@@ -102,6 +115,70 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     $actual = CRM_Memrel_Utils::getAssocConfermentRelTypeIds($noConfer['id']);
     $this->assertInternalType('array', $actual);
     $this->assertCount(0, $actual);
+  }
+
+  /**
+   * Test that the conferment relationship ID can be retrieved if contact IDs
+   * are passed to the lookup function in the correct A/B order.
+   */
+  public function test_success_contactsInProvidedOrder_getConfermentRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $relationship = civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $confermentRelTypeId,
+    ));
+    $expected = $relationship['id'];
+    $actual = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $a, $b);
+    $this->assertEquals($expected, $actual);
+  }
+
+  /**
+   * Test that the conferment relationship ID can be retrieved if contact IDs
+   * are passed to the lookup function in reversed A/B order (e.g., the B
+   * contact is passed as the first contact).
+   */
+  public function test_success_contactsInReversedOrder_getConfermentRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $relationship = civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $confermentRelTypeId,
+    ));
+    $expected = $relationship['id'];
+    // note that the order of arguments 2 and 3 is the only difference from
+    // test_success_contactsInProvidedOrder_getConfermentRelationshipId()
+    $actual = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $b, $a);
+    $this->assertEquals($expected, $actual);
+  }
+
+  /**
+   * Test that relationship status has no bearing on lookup result.
+   */
+  public function test_success_relIsInactive_getConfermentRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $relationship = civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => FALSE,
+      'relationship_type_id' => $confermentRelTypeId,
+    ));
+    $expected = $relationship['id'];
+    $actual = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $a, $b);
+    $this->assertEquals($expected, $actual);
+  }
+
+  /**
+   * Test that lookup returns FALSE if no conferment relationship exists.
+   */
+  public function test_failure_noRel_getConfermentRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $result = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $a, $b);
+    $this->assertFalse($result);
   }
 
 }
