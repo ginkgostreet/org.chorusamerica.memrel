@@ -67,20 +67,29 @@ class CRM_Memrel_Utils {
   }
 
   /**
-   * Returns the IDs of the conferment relationship types associated with the
-   * specified relationship type.
+   * Returns the IDs of the "shadow" relationship types used to confer
+   * membership.
    *
-   * @param string $relTypeId
-   *   The ID of the relationship type which may need shadowing.
+   * @param mixed $relTypeId
+   *   Optional, defaults to NULL. If a non-NULL value is passed, results are
+   *   limited to those "shadow" types associated with the specified
+   *   relationship type.
    * @return array
-   *   Array of relationship type IDs. Empty array if the relationship type is
-   *   not configured for conferment.
+   *   Array of relationship type IDs. Empty array if $relTypeId is not
+   *   configured for conferment, or if no "shadow" types are configured at all.
    */
-  public static function getAssocConfermentRelTypeIds($relTypeId) {
+  public static function getConfermentRelTypeIds($relTypeId = NULL) {
     $result = array();
-    foreach (Civi::settings()->get('memrel_mapping') as $shadow => $config) {
-      if (in_array($relTypeId, $config)) {
-        $result[] = $shadow;
+
+    $mapping = Civi::settings()->get('memrel_mapping');
+    if (is_null($relTypeId)) {
+      $result = array_keys($mapping);
+    }
+    else {
+      foreach ($mapping as $shadow => $config) {
+        if (in_array($relTypeId, $config)) {
+          $result[] = $shadow;
+        }
       }
     }
     return $result;

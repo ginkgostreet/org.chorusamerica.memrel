@@ -94,9 +94,21 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that we can get the "shadow" relationship type for a relationship type
    * configured to confer membership.
    */
-  public function testSuccessGetAssocConfermentRelTypeId() {
+  public function test_success_getFiltered_getConfermentRelTypeIds() {
     $execRelTypeId = $this->getRelTypeId('test_exec');
-    $result = CRM_Memrel_Utils::getAssocConfermentRelTypeIds($execRelTypeId);
+    $result = CRM_Memrel_Utils::getConfermentRelTypeIds($execRelTypeId);
+    $this->assertInternalType('array', $result);
+
+    $shadowId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    $this->assertContains($shadowId, $result);
+  }
+
+  /**
+   * Test that we can get all "shadow" relationship types.
+   */
+  public function test_success_getAll_getConfermentRelTypeIds() {
+    $execRelTypeId = $this->getRelTypeId('test_exec');
+    $result = CRM_Memrel_Utils::getConfermentRelTypeIds($execRelTypeId);
     $this->assertInternalType('array', $result);
 
     $shadowId = CRM_Memrel_Utils::getConfermentRelTypeId();
@@ -107,12 +119,12 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that a relationship type NOT configured to confer membership returns
    * an empty array.
    */
-  public function testFailureGetAssocConfermentRelTypeId() {
+  public function test_failure_getConfermentRelTypeIds() {
     $noConfer = civicrm_api3('RelationshipType', 'create', array(
       'name_a_b' => 'test_notConfiguredForConferment',
       'name_b_a' => 'test_notConfiguredForConferment',
     ));
-    $actual = CRM_Memrel_Utils::getAssocConfermentRelTypeIds($noConfer['id']);
+    $actual = CRM_Memrel_Utils::getConfermentRelTypeIds($noConfer['id']);
     $this->assertInternalType('array', $actual);
     $this->assertCount(0, $actual);
   }
