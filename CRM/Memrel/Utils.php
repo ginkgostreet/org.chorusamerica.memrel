@@ -151,7 +151,7 @@ class CRM_Memrel_Utils {
    *
    * @return int
    */
-  public static function getConfermentRelTypeId() {
+  public static function getDefaultConfermentRelTypeId() {
     return (int) civicrm_api3('RelationshipType', 'getvalue', array(
       'return' => 'id',
       'name_a_b' => 'membership_conferment',
