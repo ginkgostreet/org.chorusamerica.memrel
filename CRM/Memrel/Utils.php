@@ -8,13 +8,23 @@
 class CRM_Memrel_Utils {
 
   /**
+   * Enables or disables a "shadow" membership-conferment relationship between
+   * two contacts based on admin configuration and existing relationships.
    *
-   * @param type $relTypeId
-   * @param type $contactA
-   * @param type $contactB
+   * @param string|int $contactA
+   *   Contact ID.
+   * @param string|int $contactB
+   *   Contact ID.
    */
-  public static function doConfermentSync($relTypeId, $contactA, $contactB) {
-
+  public static function doConfermentSync($contactA, $contactB) {
+    foreach (self::getConfermentRelTypeIds() as $shadowRelTypeId) {
+      if (self::qualifyingRelationshipExists($shadowRelTypeId, $contactA, $contactB)) {
+        self::enableConferment($shadowRelTypeId, $contactA, $contactB);
+      }
+      else {
+        self::disableConferment($shadowRelTypeId, $contactA, $contactB);
+      }
+    }
   }
 
   /**

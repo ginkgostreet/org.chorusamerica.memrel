@@ -466,4 +466,50 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     $this->assertEquals(0, $actual);
   }
 
+  /**
+   * Test that conferment sync will create the "shadow" relationship for
+   * contacts with a qualifying relationship.
+   *
+   * Note: most of the edge cases and heavy lifting are handled in other, more
+   * thoroughly tested methods than this one. The tested method contains almost
+   * no logic of its own.
+   */
+  public function test_create_doConfermentSync() {
+    list($a, $b) = $this->createContacts();
+    civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $this->getRelTypeId('test_exec'),
+    ));
+    CRM_Memrel_Utils::doConfermentSync($a, $b);
+
+    $shadowRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    $test = CRM_Memrel_Utils::getConfermentRelationshipId($shadowRelTypeId, $a, $b);
+    // a non-FALSE result indicates the "shadow" relationship was created
+    $this->assertTrue($test !== FALSE);
+  }
+
+  /**
+   * Test that conferment sync will delete the "shadow" relationship for
+   * contacts without a qualifying relationship.
+   *
+   * Note: most of the edge cases and heavy lifting are handled in other, more
+   * thoroughly tested methods than this one. The tested method contains almost
+   * no logic of its own.
+   */
+  public function test_delete_doConfermentSync() {
+    list($a, $b) = $this->createContacts();
+    $shadowRel = civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => CRM_Memrel_Utils::getConfermentRelTypeId(),
+    ));
+    CRM_Memrel_Utils::doConfermentSync($a, $b);
+
+    $actual = civicrm_api3('Relationship', 'getcount', array(
+      'id' => $shadowRel['id'],
+    ));
+    $this->assertEquals(0, $actual);
+  }
+
 }
