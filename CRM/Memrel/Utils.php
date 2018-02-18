@@ -99,7 +99,7 @@ class CRM_Memrel_Utils {
    * Returns the ID of the instance of the specified relationship type between
    * two contacts.
    *
-   * @param mixed $relTypeId
+   * @param mixed $shadowRelTypeId
    *   The ID of the relationship type to filter by.
    * @param string $contactA
    *   Contact ID.
@@ -108,10 +108,10 @@ class CRM_Memrel_Utils {
    * @return string|FALSE
    *   Relationship ID or FALSE if none exists.
    */
-  public static function getConfermentRelationshipId($relTypeId, $contactA, $contactB) {
+  public static function getConfermentRelationshipId($shadowRelTypeId, $contactA, $contactB) {
     $params = array(
       'return' => 'id',
-      'relationship_type_id' => $relTypeId,
+      'relationship_type_id' => $shadowRelTypeId,
     );
 
     try {
