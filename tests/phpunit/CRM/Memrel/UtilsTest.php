@@ -244,4 +244,214 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     $this->assertFalse(CRM_Memrel_Utils::qualifyingRelationshipExists($this->getRelTypeId('test_exec'), $a, $b));
   }
 
+  /**
+   * Test that an existing, disabled conferment relationship is updated/enabled.
+   */
+  public function test_success_recordIsDisabled_enableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => FALSE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $a, $b);
+
+    $params['is_active'] = TRUE;
+    $params['return'] = 'id';
+    $actual = civicrm_api3('Relationship', 'getvalue', $params);
+    $this->assertEquals($expected, $actual);
+  }
+
+  /**
+   * Test that an existing, disabled conferment relationship is updated/enabled,
+   * even if the contact arguments are reversed.
+   */
+  public function test_success_recordIsDisabledReversedOrder_enableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => FALSE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    // note the reversal of the contacts
+    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $b, $a);
+
+    $params['is_active'] = TRUE;
+    $params['return'] = 'id';
+    $actual = civicrm_api3('Relationship', 'getvalue', $params);
+    $this->assertEquals($expected, $actual);
+  }
+
+  /**
+   * Test that no exception is raised and that the relationship is still active
+   * if an attempt is made to enable an already enabled conferment.
+   */
+  public function test_success_alreadyEnabled_enableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => TRUE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $a, $b);
+
+    $params['return'] = 'id';
+    $actual = civicrm_api3('Relationship', 'getvalue', $params);
+    $this->assertEquals($expected, $actual);
+  }
+
+  /**
+   * Test that no exception is raised and that the relationship is still active
+   * if an attempt is made to enable an already enabled conferment, even if the
+   * contact arguments are reversed.
+   */
+  public function test_success_alreadyEnabledReversedOrder_enableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => TRUE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    // note the reversal of contacts
+    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $b, $a);
+
+    $params['return'] = 'id';
+    $actual = civicrm_api3('Relationship', 'getvalue', $params);
+    $this->assertEquals($expected, $actual);
+  }
+
+  /**
+   * Test that a conferment relationship is created in the case that there are
+   * no previously existing ones to update.
+   */
+  public function test_success_newRecord_enableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $a, $b);
+
+    $actual = civicrm_api3('Relationship', 'getcount', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => TRUE,
+      'relationship_type_id' => $confermentRelTypeId,
+    ));
+    $this->assertEquals(1, $actual);
+  }
+
+  /**
+   * Test that conferment relationship is deleted.
+   */
+  public function test_success_recordIsEnabled_disableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => TRUE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $a, $b);
+
+    $actual = civicrm_api3('Relationship', 'getcount', array(
+      'id' => $relationshipId,
+    ));
+    $this->assertEquals(0, $actual);
+  }
+
+  /**
+   * Test that conferment relationship is deleted even if contact params are reversed.
+   */
+  public function test_success_recordIsEnabledReversedOrder_disableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => TRUE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    // note the reversal of contacts
+    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $b, $a);
+
+    $actual = civicrm_api3('Relationship', 'getcount', array(
+      'id' => $relationshipId,
+    ));
+    $this->assertEquals(0, $actual);
+  }
+
+  /**
+   * Test that conferment relationship is deleted even if already disabled.
+   */
+  public function test_success_recordIsDisabled_disableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => FALSE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $a, $b);
+
+    $actual = civicrm_api3('Relationship', 'getcount', array(
+      'id' => $relationshipId,
+    ));
+    $this->assertEquals(0, $actual);
+  }
+
+  /**
+   * Test that conferment relationship is deleted even if already disabled and
+   * contact params are reversed.
+   */
+  public function test_success_recordIsDisabledReversedOrder_disableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    $params = array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'is_active' => FALSE,
+      'relationship_type_id' => $confermentRelTypeId,
+    );
+    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    // note the reversal of contacts
+    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $b, $a);
+
+    $actual = civicrm_api3('Relationship', 'getcount', array(
+      'id' => $relationshipId,
+    ));
+    $this->assertEquals(0, $actual);
+  }
+
+  /**
+   * Test that, in case conferment is disabled between contacts between which no
+   * conferment relationship exists, that no exception is raised.
+   */
+  public function test_success_noRecord_disableConferment() {
+    $confermentRelTypeId = CRM_Memrel_Utils::getConfermentRelTypeId();
+    list($a, $b) = $this->createContacts();
+    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $a, $b);
+
+    $actual = civicrm_api3('Relationship', 'getcount', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $confermentRelTypeId,
+    ));
+    $this->assertEquals(0, $actual);
+  }
+
 }

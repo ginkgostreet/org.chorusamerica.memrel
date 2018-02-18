@@ -18,6 +18,55 @@ class CRM_Memrel_Utils {
   }
 
   /**
+   * Creates/enables a "shadow" conferment relationship between two contacts.
+   *
+   * @param string|int $shadowRelTypeId
+   *   The type of relationship that should exist between the two contacts.
+   * @param string|int $contactA
+   *   Contact ID.
+   * @param string|int $contactB
+   *   Contact ID.
+   * @throws CiviCRM_API3_Exception
+   */
+  public static function enableConferment($shadowRelTypeId, $contactA, $contactB) {
+    $params = array(
+      'is_active' => TRUE,
+    );
+
+    $relationshipId = self::getConfermentRelationshipId($shadowRelTypeId, $contactA, $contactB);
+    if ($relationshipId === FALSE) {
+      $params['contact_id_a'] = $contactA;
+      $params['contact_id_b'] = $contactB;
+      $params['relationship_type_id'] = $shadowRelTypeId;
+    }
+    else {
+      $params['id'] = $relationshipId;
+    }
+    civicrm_api3('Relationship', 'create', $params);
+  }
+
+  /**
+   * Deletes a "shadow" conferment relationship between two contacts.
+   *
+   * @param string|int $shadowRelTypeId
+   *   The type of relationship between the two contacts that should be deleted
+   *   if it exists.
+   * @param string|int $contactA
+   *   Contact ID.
+   * @param string|int $contactB
+   *   Contact ID.
+   * @throws CiviCRM_API3_Exception
+   */
+  public static function disableConferment($shadowRelTypeId, $contactA, $contactB) {
+    $relationshipId = self::getConfermentRelationshipId($shadowRelTypeId, $contactA, $contactB);
+    if ($relationshipId) {
+      civicrm_api3('Relationship', 'delete', array(
+        'id' => $relationshipId,
+      ));
+    }
+  }
+
+  /**
    * Returns the IDs of the conferment relationship types associated with the
    * specified relationship type.
    *
