@@ -2,15 +2,10 @@
 
 use CRM_Memrel_ExtensionUtil as E;
 use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
 
 /**
- * FIXME - Add test description.
- *
  * Tips:
- *  - With HookInterface, you may implement CiviCRM hooks directly in the test class.
- *    Simply create corresponding functions (e.g. "hook_civicrm_post(...)" or similar).
  *  - With TransactionalInterface, any data changes made by setUp() or test****() functions will
  *    rollback automatically -- as long as you don't manipulate schema or truncate tables.
  *    If this test needs to manipulate schema or truncate tables, then either:
@@ -19,7 +14,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+class CRM_Memrel_UtilsTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
 
   public function setUpHeadless() {
     // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
@@ -38,17 +33,26 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
   }
 
   /**
-   * Example: Test that a version is returned.
+   * Test cases like relationship delete, where the object in the hook has only
+   * an ID to work with.
    */
-  public function testWellFormedVersion() {
-    $this->assertRegExp('/^([0-9\.]|alpha|beta)*$/', \CRM_Utils_System::version());
-  }
+  public function test_makeRelationshipUsable_onlyIdAvailable() {
+    list($a, $b) = $this->createContacts();
+    $childOf = 1;
+    $api = civicrm_api3('Relationship', 'create', array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $childOf,
+    ));
 
-  /**
-   * Example: Test that we're using a fake CMS.
-   */
-  public function testWellFormedUF() {
-    $this->assertEquals('UnitTests', CIVICRM_UF);
+    $rel = new CRM_Contact_BAO_Relationship();
+    $rel->id = $api['id'];
+
+    CRM_Memrel_Utils::makeRelationshipUsable($rel);
+
+    $this->assertEquals($a, $rel->contact_id_a);
+    $this->assertEquals($b, $rel->contact_id_b);
+    $this->assertEquals($childOf, $rel->relationship_type_id);
   }
 
 }
