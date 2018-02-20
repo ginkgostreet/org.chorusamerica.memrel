@@ -39,14 +39,14 @@ class CRM_Memrel_UtilsTest extends \CRM_MemrelTest implements HeadlessInterface,
   public function test_makeRelationshipUsable_onlyIdAvailable() {
     list($a, $b) = $this->createContacts();
     $childOf = 1;
-    $api = civicrm_api3('Relationship', 'create', array(
+    $testData = $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $childOf,
     ));
 
     $rel = new CRM_Contact_BAO_Relationship();
-    $rel->id = $api['id'];
+    $rel->id = $testData['id'];
 
     CRM_Memrel_Utils::makeRelationshipUsable($rel);
 

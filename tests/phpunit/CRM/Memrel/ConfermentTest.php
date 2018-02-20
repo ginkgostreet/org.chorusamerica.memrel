@@ -123,7 +123,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
   public function test_success_contactsInProvidedOrder_getRelationshipId() {
     $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    $relationship = civicrm_api3('Relationship', 'create', array(
+    $relationship = $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $confermentRelTypeId,
@@ -141,7 +141,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
   public function test_success_contactsInReversedOrder_getRelationshipId() {
     $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    $relationship = civicrm_api3('Relationship', 'create', array(
+    $relationship = $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $confermentRelTypeId,
@@ -159,7 +159,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
   public function test_success_relIsInactive_getRelationshipId() {
     $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    $relationship = civicrm_api3('Relationship', 'create', array(
+    $relationship = $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'is_active' => FALSE,
@@ -187,7 +187,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
   public function test_success_contactsInProvidedOrder_qualifyingRelationshipExists() {
     $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    civicrm_api3('Relationship', 'create', array(
+    $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $this->getRelTypeId('test_exec'),
@@ -203,7 +203,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
   public function test_success_contactsInReversedOrder_qualifyingRelationshipExists() {
     $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    civicrm_api3('Relationship', 'create', array(
+    $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $this->getRelTypeId('test_exec'),
@@ -225,7 +225,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
   public function test_failure_relIsInactive_qualifyingRelationshipExists() {
     $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    civicrm_api3('Relationship', 'create', array(
+    $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'is_active' => FALSE,
@@ -255,7 +255,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => FALSE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    $expected = $this->createRelationship($params)['id'];
     CRM_Memrel_Conferment::enable($confermentRelTypeId, $a, $b);
 
     $params['is_active'] = TRUE;
@@ -277,7 +277,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => FALSE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    $expected = $this->createRelationship($params)['id'];
     // note the reversal of the contacts
     CRM_Memrel_Conferment::enable($confermentRelTypeId, $b, $a);
 
@@ -300,7 +300,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => TRUE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    $expected = $this->createRelationship($params)['id'];
     CRM_Memrel_Conferment::enable($confermentRelTypeId, $a, $b);
 
     $params['return'] = 'id';
@@ -322,7 +322,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => TRUE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $expected = civicrm_api3('Relationship', 'create', $params)['id'];
+    $expected = $this->createRelationship($params)['id'];
     // note the reversal of contacts
     CRM_Memrel_Conferment::enable($confermentRelTypeId, $b, $a);
 
@@ -361,7 +361,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => TRUE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    $relationshipId = $this->createRelationship($params)['id'];
     CRM_Memrel_Conferment::disable($confermentRelTypeId, $a, $b);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
@@ -382,7 +382,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => TRUE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    $relationshipId = $this->createRelationship($params)['id'];
     // note the reversal of contacts
     CRM_Memrel_Conferment::disable($confermentRelTypeId, $b, $a);
 
@@ -404,7 +404,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => FALSE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    $relationshipId = $this->createRelationship($params)['id'];
     CRM_Memrel_Conferment::disable($confermentRelTypeId, $a, $b);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
@@ -426,7 +426,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
       'is_active' => FALSE,
       'relationship_type_id' => $confermentRelTypeId,
     );
-    $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
+    $relationshipId = $this->createRelationship($params)['id'];
     // note the reversal of contacts
     CRM_Memrel_Conferment::disable($confermentRelTypeId, $b, $a);
 
@@ -463,7 +463,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
    */
   public function test_create_doSync() {
     list($a, $b) = $this->createContacts();
-    civicrm_api3('Relationship', 'create', array(
+    $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $this->getRelTypeId('test_exec'),
@@ -486,7 +486,7 @@ class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInter
    */
   public function test_delete_doSync() {
     list($a, $b) = $this->createContacts();
-    $shadowRel = civicrm_api3('Relationship', 'create', array(
+    $shadowRel = $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => CRM_Memrel_Conferment::getDefaultConfermentRelTypeId(),
