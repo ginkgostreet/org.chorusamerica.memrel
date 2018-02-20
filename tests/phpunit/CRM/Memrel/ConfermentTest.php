@@ -16,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class CRM_Memrel_ConfermentTest extends \PHPUnit_Framework_TestCase implements HeadlessInterface, TransactionalInterface {
+class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
 
   /**
    * Relationship type IDs of new relationship types for testing, keyed by names.
@@ -75,19 +75,6 @@ class CRM_Memrel_ConfermentTest extends \PHPUnit_Framework_TestCase implements H
       ));
     }
     return $this->relTypeIds[$name];
-  }
-
-  private function createContacts() {
-    $contactA = civicrm_api3('Contact', 'create', array(
-      'contact_type' => 'Individual',
-      'first_name' => 'A',
-    ));
-    $contactB = civicrm_api3('Contact', 'create', array(
-      'contact_type' => 'Individual',
-      'first_name' => 'B',
-    ));
-
-    return array($contactA['id'], $contactB['id']);
   }
 
   /**
