@@ -14,6 +14,8 @@ class CRM_Memrel_Utils {
    * @throws CRM_Core_Exception
    *   If the properties that make the object useful are not present and cannot
    *   be fetched.
+   * @throws CiviCRM_API3_Exception
+   *   If an API called by this method fails.
    */
   public static function makeRelationshipUsable(CRM_Contact_DAO_Relationship $rel) {
     if (isset($rel->contact_id_a, $rel->contact_id_b, $rel->relationship_type_id)) {

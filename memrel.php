@@ -151,3 +151,39 @@ function memrel_civicrm_navigationMenu(&$menu) {
   ));
   _memrel_civix_navigationMenu($menu);
 }
+
+/**
+ * Implements hook_civicrm_post().
+ *
+ * Delegates to CRM_Memrel_Conferment (if appropriate) for the management of
+ * "shadow" membership-conferment relationships.
+ *
+ * @link https://docs.civicrm.org/dev/en/latest/hooks/hook_civicrm_post/
+ */
+function memrel_civicrm_post($op, $objectName, $objectId, &$objectRef) {
+  // This extension is concerned with Relationships only.
+  if ($objectName !== 'Relationship') {
+    return;
+  }
+
+  /* @var $objectRef CRM_Contact_DAO_Relationship */
+  try {
+    CRM_Memrel_Utils::makeRelationshipUsable($objectRef);
+
+    // Bail out if the relationship is not related to membership conferment.
+    $shadowRelTypeIds = CRM_Memrel_Conferment::getConfermentRelTypeIds($objectRef->relationship_type_id);
+    if (empty($shadowRelTypeIds)) {
+      return;
+    }
+
+    CRM_Memrel_Conferment::doSync($objectRef->contact_id_a, $objectRef->contact_id_b);
+  }
+  // Catch unusable relationship (and possibly other?) errors.
+  catch (CRM_Core_Exception $e) {
+    Civi::log()->error($e->getMessage(), $e->getErrorData());
+  }
+  // Catch API errors that might be thrown by makeRelationshipUsable() or doSync().
+  catch (CiviCRM_API3_Exception $e) {
+    Civi::log()->error($e->getMessage(), $e->getExtraParams());
+  }
+}
