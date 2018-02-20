@@ -71,7 +71,7 @@ class CRM_Memrel_Form_Settings extends CRM_Core_Form {
   protected function getShadowRelationshipTypeId() {
 
     if (!isset($this->shadowRelationshipTypeId)) {
-      $this->shadowRelationshipTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+      $this->shadowRelationshipTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     }
 
     return $this->shadowRelationshipTypeId;

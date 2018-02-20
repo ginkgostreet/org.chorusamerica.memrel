@@ -5,7 +5,7 @@
  * conferment relationship is needed for a pair of contacts (and to manage it
  * when appropriate).
  */
-class CRM_Memrel_Utils {
+class CRM_Memrel_Conferment {
 
   /**
    * Enables or disables a "shadow" membership-conferment relationship between
@@ -16,13 +16,13 @@ class CRM_Memrel_Utils {
    * @param string|int $contactB
    *   Contact ID.
    */
-  public static function doConfermentSync($contactA, $contactB) {
+  public static function doSync($contactA, $contactB) {
     foreach (self::getConfermentRelTypeIds() as $shadowRelTypeId) {
       if (self::qualifyingRelationshipExists($shadowRelTypeId, $contactA, $contactB)) {
-        self::enableConferment($shadowRelTypeId, $contactA, $contactB);
+        self::enable($shadowRelTypeId, $contactA, $contactB);
       }
       else {
-        self::disableConferment($shadowRelTypeId, $contactA, $contactB);
+        self::disable($shadowRelTypeId, $contactA, $contactB);
       }
     }
   }
@@ -38,12 +38,12 @@ class CRM_Memrel_Utils {
    *   Contact ID.
    * @throws CiviCRM_API3_Exception
    */
-  public static function enableConferment($shadowRelTypeId, $contactA, $contactB) {
+  public static function enable($shadowRelTypeId, $contactA, $contactB) {
     $params = array(
       'is_active' => TRUE,
     );
 
-    $relationshipId = self::getConfermentRelationshipId($shadowRelTypeId, $contactA, $contactB);
+    $relationshipId = self::getRelationshipId($shadowRelTypeId, $contactA, $contactB);
     if ($relationshipId === FALSE) {
       $params['contact_id_a'] = $contactA;
       $params['contact_id_b'] = $contactB;
@@ -67,8 +67,8 @@ class CRM_Memrel_Utils {
    *   Contact ID.
    * @throws CiviCRM_API3_Exception
    */
-  public static function disableConferment($shadowRelTypeId, $contactA, $contactB) {
-    $relationshipId = self::getConfermentRelationshipId($shadowRelTypeId, $contactA, $contactB);
+  public static function disable($shadowRelTypeId, $contactA, $contactB) {
+    $relationshipId = self::getRelationshipId($shadowRelTypeId, $contactA, $contactB);
     if ($relationshipId) {
       civicrm_api3('Relationship', 'delete', array(
         'id' => $relationshipId,
@@ -118,7 +118,7 @@ class CRM_Memrel_Utils {
    * @return string|FALSE
    *   Relationship ID or FALSE if none exists.
    */
-  public static function getConfermentRelationshipId($shadowRelTypeId, $contactA, $contactB) {
+  public static function getRelationshipId($shadowRelTypeId, $contactA, $contactB) {
     $params = array(
       'return' => 'id',
       'relationship_type_id' => $shadowRelTypeId,

@@ -16,7 +16,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements HeadlessInterface, TransactionalInterface {
+class CRM_Memrel_ConfermentTest extends \PHPUnit_Framework_TestCase implements HeadlessInterface, TransactionalInterface {
 
   /**
    * Relationship type IDs of new relationship types for testing, keyed by names.
@@ -42,7 +42,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
         ));
 
         Civi::settings()->set('memrel_mapping', array(
-          CRM_Memrel_Utils::getDefaultConfermentRelTypeId() => array($admin['id'], $exec['id']),
+          CRM_Memrel_Conferment::getDefaultConfermentRelTypeId() => array($admin['id'], $exec['id']),
         ));
       }, 'configureRelationships')
       ->apply();
@@ -96,10 +96,10 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    */
   public function test_success_getFiltered_getConfermentRelTypeIds() {
     $execRelTypeId = $this->getRelTypeId('test_exec');
-    $result = CRM_Memrel_Utils::getConfermentRelTypeIds($execRelTypeId);
+    $result = CRM_Memrel_Conferment::getConfermentRelTypeIds($execRelTypeId);
     $this->assertInternalType('array', $result);
 
-    $shadowId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+    $shadowId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     $this->assertContains($shadowId, $result);
   }
 
@@ -108,10 +108,10 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    */
   public function test_success_getAll_getConfermentRelTypeIds() {
     $execRelTypeId = $this->getRelTypeId('test_exec');
-    $result = CRM_Memrel_Utils::getConfermentRelTypeIds($execRelTypeId);
+    $result = CRM_Memrel_Conferment::getConfermentRelTypeIds($execRelTypeId);
     $this->assertInternalType('array', $result);
 
-    $shadowId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+    $shadowId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     $this->assertContains($shadowId, $result);
   }
 
@@ -124,7 +124,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'name_a_b' => 'test_notConfiguredForConferment',
       'name_b_a' => 'test_notConfiguredForConferment',
     ));
-    $actual = CRM_Memrel_Utils::getConfermentRelTypeIds($noConfer['id']);
+    $actual = CRM_Memrel_Conferment::getConfermentRelTypeIds($noConfer['id']);
     $this->assertInternalType('array', $actual);
     $this->assertCount(0, $actual);
   }
@@ -133,8 +133,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that the conferment relationship ID can be retrieved if contact IDs
    * are passed to the lookup function in the correct A/B order.
    */
-  public function test_success_contactsInProvidedOrder_getConfermentRelationshipId() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_contactsInProvidedOrder_getRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $relationship = civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
@@ -142,7 +142,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'relationship_type_id' => $confermentRelTypeId,
     ));
     $expected = $relationship['id'];
-    $actual = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $a, $b);
+    $actual = CRM_Memrel_Conferment::getRelationshipId($confermentRelTypeId, $a, $b);
     $this->assertEquals($expected, $actual);
   }
 
@@ -151,8 +151,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * are passed to the lookup function in reversed A/B order (e.g., the B
    * contact is passed as the first contact).
    */
-  public function test_success_contactsInReversedOrder_getConfermentRelationshipId() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_contactsInReversedOrder_getRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $relationship = civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
@@ -162,15 +162,15 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     $expected = $relationship['id'];
     // note that the order of arguments 2 and 3 is the only difference from
     // test_success_contactsInProvidedOrder_getConfermentRelationshipId()
-    $actual = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $b, $a);
+    $actual = CRM_Memrel_Conferment::getRelationshipId($confermentRelTypeId, $b, $a);
     $this->assertEquals($expected, $actual);
   }
 
   /**
    * Test that relationship status has no bearing on lookup result.
    */
-  public function test_success_relIsInactive_getConfermentRelationshipId() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_relIsInactive_getRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $relationship = civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
@@ -179,17 +179,17 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'relationship_type_id' => $confermentRelTypeId,
     ));
     $expected = $relationship['id'];
-    $actual = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $a, $b);
+    $actual = CRM_Memrel_Conferment::getRelationshipId($confermentRelTypeId, $a, $b);
     $this->assertEquals($expected, $actual);
   }
 
   /**
    * Test that lookup returns FALSE if no conferment relationship exists.
    */
-  public function test_failure_noRel_getConfermentRelationshipId() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_failure_noRel_getRelationshipId() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    $result = CRM_Memrel_Utils::getConfermentRelationshipId($confermentRelTypeId, $a, $b);
+    $result = CRM_Memrel_Conferment::getRelationshipId($confermentRelTypeId, $a, $b);
     $this->assertFalse($result);
   }
 
@@ -198,14 +198,14 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * are passed to the lookup function in the correct A/B order.
    */
   public function test_success_contactsInProvidedOrder_qualifyingRelationshipExists() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $this->getRelTypeId('test_exec'),
     ));
-    $this->assertTrue(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
+    $this->assertTrue(CRM_Memrel_Conferment::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
   }
 
   /**
@@ -214,7 +214,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * contact is passed as the first contact).
    */
   public function test_success_contactsInReversedOrder_qualifyingRelationshipExists() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
@@ -223,20 +223,20 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     ));
     // note that the order of arguments 2 and 3 is the only difference from
     // test_success_contactsInProvidedOrder_qualifyingRelationshipExists()
-    $this->assertTrue(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $b, $a));
+    $this->assertTrue(CRM_Memrel_Conferment::qualifyingRelationshipExists($confermentRelTypeId, $b, $a));
   }
 
   public function test_failure_noRel_qualifyingRelationshipExists() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    $this->assertFalse(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
+    $this->assertFalse(CRM_Memrel_Conferment::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
   }
 
   /**
    * Test that inactive relationships don't qualify for membership.
    */
   public function test_failure_relIsInactive_qualifyingRelationshipExists() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
@@ -244,7 +244,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'is_active' => FALSE,
       'relationship_type_id' => $this->getRelTypeId('test_exec'),
     ));
-    $this->assertFalse(CRM_Memrel_Utils::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
+    $this->assertFalse(CRM_Memrel_Conferment::qualifyingRelationshipExists($confermentRelTypeId, $a, $b));
   }
 
   /**
@@ -253,14 +253,14 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    */
   public function test_failure_badConfig_qualifyingRelationshipExists() {
     list($a, $b) = $this->createContacts();
-    $this->assertFalse(CRM_Memrel_Utils::qualifyingRelationshipExists($this->getRelTypeId('test_exec'), $a, $b));
+    $this->assertFalse(CRM_Memrel_Conferment::qualifyingRelationshipExists($this->getRelTypeId('test_exec'), $a, $b));
   }
 
   /**
    * Test that an existing, disabled conferment relationship is updated/enabled.
    */
-  public function test_success_recordIsDisabled_enableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_recordIsDisabled_enable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -269,7 +269,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'relationship_type_id' => $confermentRelTypeId,
     );
     $expected = civicrm_api3('Relationship', 'create', $params)['id'];
-    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $a, $b);
+    CRM_Memrel_Conferment::enable($confermentRelTypeId, $a, $b);
 
     $params['is_active'] = TRUE;
     $params['return'] = 'id';
@@ -281,8 +281,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that an existing, disabled conferment relationship is updated/enabled,
    * even if the contact arguments are reversed.
    */
-  public function test_success_recordIsDisabledReversedOrder_enableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_recordIsDisabledReversedOrder_enable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -292,7 +292,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     );
     $expected = civicrm_api3('Relationship', 'create', $params)['id'];
     // note the reversal of the contacts
-    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $b, $a);
+    CRM_Memrel_Conferment::enable($confermentRelTypeId, $b, $a);
 
     $params['is_active'] = TRUE;
     $params['return'] = 'id';
@@ -304,8 +304,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that no exception is raised and that the relationship is still active
    * if an attempt is made to enable an already enabled conferment.
    */
-  public function test_success_alreadyEnabled_enableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_alreadyEnabled_enable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -314,7 +314,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'relationship_type_id' => $confermentRelTypeId,
     );
     $expected = civicrm_api3('Relationship', 'create', $params)['id'];
-    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $a, $b);
+    CRM_Memrel_Conferment::enable($confermentRelTypeId, $a, $b);
 
     $params['return'] = 'id';
     $actual = civicrm_api3('Relationship', 'getvalue', $params);
@@ -326,8 +326,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * if an attempt is made to enable an already enabled conferment, even if the
    * contact arguments are reversed.
    */
-  public function test_success_alreadyEnabledReversedOrder_enableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_alreadyEnabledReversedOrder_enable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -337,7 +337,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     );
     $expected = civicrm_api3('Relationship', 'create', $params)['id'];
     // note the reversal of contacts
-    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $b, $a);
+    CRM_Memrel_Conferment::enable($confermentRelTypeId, $b, $a);
 
     $params['return'] = 'id';
     $actual = civicrm_api3('Relationship', 'getvalue', $params);
@@ -348,10 +348,10 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that a conferment relationship is created in the case that there are
    * no previously existing ones to update.
    */
-  public function test_success_newRecord_enableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_newRecord_enable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    CRM_Memrel_Utils::enableConferment($confermentRelTypeId, $a, $b);
+    CRM_Memrel_Conferment::enable($confermentRelTypeId, $a, $b);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
       'contact_id_a' => $a,
@@ -365,8 +365,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
   /**
    * Test that conferment relationship is deleted.
    */
-  public function test_success_recordIsEnabled_disableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_recordIsEnabled_disable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -375,7 +375,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'relationship_type_id' => $confermentRelTypeId,
     );
     $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
-    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $a, $b);
+    CRM_Memrel_Conferment::disable($confermentRelTypeId, $a, $b);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
       'id' => $relationshipId,
@@ -386,8 +386,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
   /**
    * Test that conferment relationship is deleted even if contact params are reversed.
    */
-  public function test_success_recordIsEnabledReversedOrder_disableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_recordIsEnabledReversedOrder_disable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -397,7 +397,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     );
     $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
     // note the reversal of contacts
-    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $b, $a);
+    CRM_Memrel_Conferment::disable($confermentRelTypeId, $b, $a);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
       'id' => $relationshipId,
@@ -408,8 +408,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
   /**
    * Test that conferment relationship is deleted even if already disabled.
    */
-  public function test_success_recordIsDisabled_disableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_recordIsDisabled_disable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -418,7 +418,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
       'relationship_type_id' => $confermentRelTypeId,
     );
     $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
-    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $a, $b);
+    CRM_Memrel_Conferment::disable($confermentRelTypeId, $a, $b);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
       'id' => $relationshipId,
@@ -430,8 +430,8 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that conferment relationship is deleted even if already disabled and
    * contact params are reversed.
    */
-  public function test_success_recordIsDisabledReversedOrder_disableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_recordIsDisabledReversedOrder_disable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
     $params = array(
       'contact_id_a' => $a,
@@ -441,7 +441,7 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
     );
     $relationshipId = civicrm_api3('Relationship', 'create', $params)['id'];
     // note the reversal of contacts
-    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $b, $a);
+    CRM_Memrel_Conferment::disable($confermentRelTypeId, $b, $a);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
       'id' => $relationshipId,
@@ -453,10 +453,10 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * Test that, in case conferment is disabled between contacts between which no
    * conferment relationship exists, that no exception is raised.
    */
-  public function test_success_noRecord_disableConferment() {
-    $confermentRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
+  public function test_success_noRecord_disable() {
+    $confermentRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
     list($a, $b) = $this->createContacts();
-    CRM_Memrel_Utils::disableConferment($confermentRelTypeId, $a, $b);
+    CRM_Memrel_Conferment::disable($confermentRelTypeId, $a, $b);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
       'contact_id_a' => $a,
@@ -474,17 +474,17 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * thoroughly tested methods than this one. The tested method contains almost
    * no logic of its own.
    */
-  public function test_create_doConfermentSync() {
+  public function test_create_doSync() {
     list($a, $b) = $this->createContacts();
     civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
       'relationship_type_id' => $this->getRelTypeId('test_exec'),
     ));
-    CRM_Memrel_Utils::doConfermentSync($a, $b);
+    CRM_Memrel_Conferment::doSync($a, $b);
 
-    $shadowRelTypeId = CRM_Memrel_Utils::getDefaultConfermentRelTypeId();
-    $test = CRM_Memrel_Utils::getConfermentRelationshipId($shadowRelTypeId, $a, $b);
+    $shadowRelTypeId = CRM_Memrel_Conferment::getDefaultConfermentRelTypeId();
+    $test = CRM_Memrel_Conferment::getRelationshipId($shadowRelTypeId, $a, $b);
     // a non-FALSE result indicates the "shadow" relationship was created
     $this->assertTrue($test !== FALSE);
   }
@@ -497,14 +497,14 @@ class CRM_Memrel_UtilsTest extends \PHPUnit_Framework_TestCase implements Headle
    * thoroughly tested methods than this one. The tested method contains almost
    * no logic of its own.
    */
-  public function test_delete_doConfermentSync() {
+  public function test_delete_doSync() {
     list($a, $b) = $this->createContacts();
     $shadowRel = civicrm_api3('Relationship', 'create', array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
-      'relationship_type_id' => CRM_Memrel_Utils::getDefaultConfermentRelTypeId(),
+      'relationship_type_id' => CRM_Memrel_Conferment::getDefaultConfermentRelTypeId(),
     ));
-    CRM_Memrel_Utils::doConfermentSync($a, $b);
+    CRM_Memrel_Conferment::doSync($a, $b);
 
     $actual = civicrm_api3('Relationship', 'getcount', array(
       'id' => $shadowRel['id'],
