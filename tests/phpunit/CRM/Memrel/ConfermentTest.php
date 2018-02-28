@@ -18,63 +18,12 @@ use Civi\Test\TransactionalInterface;
  */
 class CRM_Memrel_ConfermentTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
 
-  /**
-   * Relationship type IDs of new relationship types for testing, keyed by names.
-   *
-   * @var array
-   */
-  private $relTypeIds = array();
-
-  public function setUpHeadless() {
-    // Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-    // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->callback(function() {
-        $admin = civicrm_api3('RelationshipType', 'create', array(
-          'name_a_b' => 'test_admin',
-          'name_b_a' => 'test_admin',
-        ));
-
-        $exec = civicrm_api3('RelationshipType', 'create', array(
-          'name_a_b' => 'test_exec',
-          'name_b_a' => 'test_exec',
-        ));
-
-        Civi::settings()->set('memrel_mapping', array(
-          CRM_Memrel_Conferment::getDefaultConfermentRelTypeId() => array($admin['id'], $exec['id']),
-        ));
-      }, 'configureRelationships')
-      ->apply();
-  }
-
   public function setUp() {
     parent::setUp();
   }
 
   public function tearDown() {
     parent::tearDown();
-  }
-
-  /**
-   * Helper function for retrieving relationship type IDs by name.
-   *
-   * Assumes the same name is used for both directions of the relationship.
-   *
-   * @param string $name
-   *   The relationship type name.
-   * @return string
-   *   The relationship type ID.
-   */
-  private function getRelTypeId($name) {
-    if (!isset($this->relTypeIds[$name])) {
-      $this->relTypeIds[$name] = civicrm_api3('RelationshipType', 'getvalue', array(
-        'return' => 'id',
-        'name_a_b' => $name,
-        'name_b_a' => $name,
-      ));
-    }
-    return $this->relTypeIds[$name];
   }
 
   /**
