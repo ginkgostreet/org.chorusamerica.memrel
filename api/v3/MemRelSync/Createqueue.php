@@ -13,7 +13,7 @@ use CRM_Memrel_ExtensionUtil as E;
 function civicrm_api3_mem_rel_sync_createqueue($params) {
   $api = civicrm_api3('Relationship', 'get', array(
     'options' => array('limit' => 0),
-    'relationship_type_id' => array('IN' => $params['rel_type_id']),
+    'relationship_type_id' => array('IN' => (array) $params['rel_type_id']),
     'return' => array('id'),
   ));
 

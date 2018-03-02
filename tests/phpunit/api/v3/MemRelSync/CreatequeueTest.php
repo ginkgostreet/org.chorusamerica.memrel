@@ -22,7 +22,7 @@ class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements Headl
   /**
    * Test that a queue item is created for each specified relationship type.
    */
-  public function test_success_createQueue() {
+  public function test_success_multipleTypes_createQueue() {
     list($a, $b) = $this->createContacts();
     $this->createRelationship(array(
       'contact_id_a' => $a,
@@ -61,6 +61,46 @@ class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements Headl
       ->select('data')
       ->where('queue_name = @name', array('name' => CRM_Memrel_QueueManager::NAME))
       ->limit(1);
+
+    $task = CRM_Core_DAO::singleValueQuery($selectTask->toSQL());
+    $this->assertInstanceOf('CRM_Memrel_QueueTask', unserialize($task));
+  }
+
+  /**
+   * Test that relationship_type_id passed as scalar value is okay.
+   */
+  public function test_success_paramAsScalar_createQueue() {
+    list($a, $b) = $this->createContacts();
+    $this->createRelationship(array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $this->getRelTypeId('test_admin'),
+    ));
+    // note: this relationship should not be queued because of its type
+    $this->createRelationship(array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $this->getRelTypeId('test_exec'),
+    ));
+
+    $expected = 1;
+    $test = civicrm_api3('MemRelSync', 'createqueue', array(
+      'rel_type_id' => $this->getRelTypeId('test_admin'),
+    ));
+    // tests custom logic around calculating the count
+    $this->assertEquals($expected, $test['count']);
+
+    $selectCount = CRM_Utils_SQL_Select::from('civicrm_queue_item')
+        ->select('COUNT(*) as cnt')
+        ->where('queue_name = @name', array('name' => CRM_Memrel_QueueManager::NAME));
+
+    // tests that the queue item was actually created
+    $this->assertEquals($expected, CRM_Core_DAO::singleValueQuery($selectCount->toSQL()));
+
+    $selectTask = CRM_Utils_SQL_Select::from('civicrm_queue_item')
+        ->select('data')
+        ->where('queue_name = @name', array('name' => CRM_Memrel_QueueManager::NAME))
+        ->limit(1);
 
     $task = CRM_Core_DAO::singleValueQuery($selectTask->toSQL());
     $this->assertInstanceOf('CRM_Memrel_QueueTask', unserialize($task));
