@@ -11,8 +11,10 @@ return array (
     'params' =>
     array (
       'version' => 3,
-      'name' => 'Populate queue of contact pairs to evaluate for shadow relationships',
-      'description' => 'A memory-intensive process that need occur only on extension install or reconfigure',
+      'name' => 'Membership by Relationship: Populate queue',
+      'description' => 'A memory-intensive process to prepare a queue of contact
+        pairs to evaluate for shadow relationships that need occur only on
+        extension install or reconfigure',
       'run_frequency' => 'Yearly',
       'api_entity' => 'MemRelSync',
       'api_action' => 'createqueue',
