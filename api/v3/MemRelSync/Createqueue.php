@@ -2,7 +2,28 @@
 use CRM_Memrel_ExtensionUtil as E;
 
 /**
- * MemRelSync.CreateQueue API
+ * MemRelSync.createqueue API specification (optional)
+ *
+ * This is used for documentation and validation.
+ *
+ * @param array $spec description of fields supported by this API call
+ * @return void
+ * @see http://wiki.civicrm.org/confluence/display/CRMDOC/API+Architecture+Standards
+ */
+function _civicrm_api3_mem_rel_sync_createqueue_spec(&$spec) {
+  $spec['rel_type_id'] = array(
+    'title' => 'Relationship type ID',
+    'description' => 'The ID of a relationship type to "kick" to trigger
+      membership conferment behavior. Useful in cases where a membership type
+      has been reconfigured to confer based on different relationship types.',
+    'type' => CRM_Utils_Type::T_INT,
+    'FKApiName' => 'RelationshipType',
+    'api.required' => 1,
+  );
+}
+
+/**
+ * MemRelSync.createqueue API
  *
  * @param array $params
  * @return array API result descriptor
