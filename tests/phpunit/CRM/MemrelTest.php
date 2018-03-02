@@ -14,21 +14,6 @@ class CRM_MemrelTest extends \PHPUnit_Framework_TestCase {
     // See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
     return \Civi\Test::headless()
       ->installMe(__DIR__)
-      ->callback(function() {
-        $admin = civicrm_api3('RelationshipType', 'create', array(
-          'name_a_b' => 'test_admin',
-          'name_b_a' => 'test_admin',
-        ));
-
-        $exec = civicrm_api3('RelationshipType', 'create', array(
-          'name_a_b' => 'test_exec',
-          'name_b_a' => 'test_exec',
-        ));
-
-        Civi::settings()->set('memrel_mapping', array(
-          CRM_Memrel_Conferment::getDefaultConfermentRelTypeId() => array($admin['id'], $exec['id']),
-        ));
-      }, 'configureRelationships')
       ->apply();
   }
 
@@ -98,6 +83,19 @@ class CRM_MemrelTest extends \PHPUnit_Framework_TestCase {
     CRM_Core_DAO::executeQuery(CRM_Utils_SQL_Insert::dao($rel)->toSQL());
 
     return civicrm_api3('Relationship', 'getsingle', $params);
+  }
+
+  /**
+   * Helper function to create test data.
+   *
+   * Creates relationship types with the same name for both directions.
+   */
+  protected function createRelationshipType($name) {
+    $api = civicrm_api3('RelationshipType', 'create', array(
+      'name_a_b' => $name,
+      'name_b_a' => $name,
+    ));
+    $this->relTypeIds[$name] = $api['id'];
   }
 
 }

@@ -24,6 +24,9 @@ class api_v3_MemRelSync_ProcessqueueTest extends \CRM_MemrelTest implements Head
    * The setup() method is executed before the test is executed (optional).
    */
   public function setUp() {
+    $this->createRelationshipType('test_admin');
+    $this->createRelationshipType('test_exec');
+
     for ($i = 0; $i < $this->numberOfDummyRelationships; $i += 2) {
       list($a, $b) = $this->createContacts();
       $this->createRelationship(array(
@@ -42,14 +45,6 @@ class api_v3_MemRelSync_ProcessqueueTest extends \CRM_MemrelTest implements Head
     $this->assertEquals($this->numberOfDummyRelationships, $queue['count']);
 
     parent::setUp();
-  }
-
-  /**
-   * The tearDown() method is executed after the test was executed (optional)
-   * This can be used for cleanup.
-   */
-  public function tearDown() {
-    parent::tearDown();
   }
 
   /**
