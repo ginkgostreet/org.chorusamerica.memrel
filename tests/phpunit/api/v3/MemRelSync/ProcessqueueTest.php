@@ -1,30 +1,46 @@
 <?php
 
 use Civi\Test\HeadlessInterface;
-use Civi\Test\HookInterface;
 use Civi\Test\TransactionalInterface;
 
 /**
- * MemRelSync.ProcessQueue API Test Case
- * This is a generic test class implemented with PHPUnit.
+ * Tests our ability to process queues.
+ *
  * @group headless
  */
-class api_v3_MemRelSync_ProcessQueueTest extends \PHPUnit_Framework_TestCase implements HeadlessInterface, HookInterface, TransactionalInterface {
+class api_v3_MemRelSync_ProcessqueueTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
 
   /**
-   * Civi\Test has many helpers, like install(), uninstall(), sql(), and sqlFile().
-   * See: https://github.com/civicrm/org.civicrm.testapalooza/blob/master/civi-test.md
+   * Number of dummy relationships to create on setup.
+   *
+   * Needs to be large enough that the queue can't process them all in one
+   * second and small enough that they can be processed in a few seconds.
+   *
+   * @var int
    */
-  public function setUpHeadless() {
-    return \Civi\Test::headless()
-      ->installMe(__DIR__)
-      ->apply();
-  }
+  private $numberOfDummyRelationships = 500;
 
   /**
    * The setup() method is executed before the test is executed (optional).
    */
   public function setUp() {
+    for ($i = 0; $i < $this->numberOfDummyRelationships; $i += 2) {
+      list($a, $b) = $this->createContacts();
+      $this->createRelationship(array(
+        'contact_id_a' => $a,
+        'contact_id_b' => $b,
+        'relationship_type_id' => $this->getRelTypeId('test_admin'),
+      ));
+      $this->createRelationship(array(
+        'contact_id_a' => $a,
+        'contact_id_b' => $b,
+        'relationship_type_id' => $this->getRelTypeId('test_exec'),
+      ));
+    }
+
+    $queue = civicrm_api3('MemRelSync', 'createqueue', array());
+    $this->assertEquals($this->numberOfDummyRelationships, $queue['count']);
+
     parent::setUp();
   }
 
@@ -37,13 +53,45 @@ class api_v3_MemRelSync_ProcessQueueTest extends \PHPUnit_Framework_TestCase imp
   }
 
   /**
-   * Simple example test case.
-   *
-   * Note how the function name begins with the word "test".
+   * Test timeout parameter.
    */
-  public function testApiExample() {
-    $result = civicrm_api3('MemRelSync', 'ProcessQueue', array('magicword' => 'sesame'));
-    $this->assertEquals('Twelve', $result['values'][12]['name']);
+  public function test_shortTimeout_processQueue() {
+    $maxRunTime = 1;
+
+    $start = microtime(TRUE);
+    civicrm_api3('MemRelSync', 'processqueue', array(
+      'max_run_time' => $maxRunTime,
+    ));
+    $end = microtime(TRUE);
+
+    // Test that queue processing runs approximately the max time.
+    $this->assertEquals($maxRunTime, round($end - $start));
+
+    $select = CRM_Utils_SQL_Select::from('civicrm_queue_item')
+      ->select('COUNT(*) as cnt')
+      ->where('queue_name = @name', array('name' => CRM_Memrel_QueueManager::NAME));
+    $remaining = CRM_Core_DAO::singleValueQuery($select->toSQL());
+
+    // Test that some but not all items were processed.
+    $this->assertTrue($this->numberOfDummyRelationships > $remaining && $remaining > 0);
+  }
+
+  /**
+   * Test the essential queue-processing features of the API.
+   */
+  public function test_success_processQueue() {
+    $api = civicrm_api3('MemRelSync', 'processqueue', array());
+
+    $count = CRM_Utils_SQL_Select::from('civicrm_queue_item')
+        ->select('COUNT(*) as cnt')
+        ->where('queue_name = @name', array('name' => CRM_Memrel_QueueManager::NAME));
+
+    // Test that the queue is shortened by a run of the processor.
+    $this->assertLessThan($this->numberOfDummyRelationships, CRM_Core_DAO::singleValueQuery($count->toSQL()));
+
+    // Test return parameters for accuracy.
+    $this->assertEquals($this->numberOfDummyRelationships, $api['values']['qtyProcessed']);
+    $this->assertEquals(0, $api['values']['qtyRemaining']);
   }
 
 }
