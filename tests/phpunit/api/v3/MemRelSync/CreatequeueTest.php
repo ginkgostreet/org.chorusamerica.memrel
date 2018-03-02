@@ -8,7 +8,7 @@ use Civi\Test\TransactionalInterface;
  *
  * @group headless
  */
-class api_v3_MemRelSync_CreateQueueTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
+class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
 
   /**
    * The setup() method is executed before the test is executed (optional).
@@ -46,12 +46,20 @@ class api_v3_MemRelSync_CreateQueueTest extends \CRM_MemrelTest implements Headl
     // tests custom logic around calculating the count
     $this->assertEquals($expected, $test['count']);
 
-    $select = CRM_Utils_SQL_Select::from('civicrm_queue_item')
+    $selectCount = CRM_Utils_SQL_Select::from('civicrm_queue_item')
       ->select('COUNT(*) as cnt')
       ->where('queue_name = @name', array('name' => CRM_Memrel_QueueManager::NAME));
 
     // tests that the queue items were actually created
-    $this->assertEquals($expected, CRM_Core_DAO::singleValueQuery($select->toSQL()));
+    $this->assertEquals($expected, CRM_Core_DAO::singleValueQuery($selectCount->toSQL()));
+
+    $selectTask = CRM_Utils_SQL_Select::from('civicrm_queue_item')
+      ->select('data')
+      ->where('queue_name = @name', array('name' => CRM_Memrel_QueueManager::NAME))
+      ->limit(1);
+
+    $task = CRM_Core_DAO::singleValueQuery($selectTask->toSQL());
+    $this->assertInstanceOf('CRM_Memrel_QueueTask', unserialize($task));
   }
 
 }

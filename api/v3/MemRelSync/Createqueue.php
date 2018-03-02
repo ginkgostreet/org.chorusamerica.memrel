@@ -31,7 +31,8 @@ function civicrm_api3_mem_rel_sync_createqueue($params) {
   $cnt = 0; // used to override the default API count output
   $queue = CRM_Memrel_QueueManager::singleton()->getQueue();
   foreach ($api['values'] as $data) {
-    $queue->createItem($data);
+    $task = new CRM_Memrel_QueueTask($data['contact_id_a'], $data['contact_id_b']);
+    $queue->createItem($task);
     $cnt++;
   }
 
