@@ -41,7 +41,12 @@ class api_v3_MemRelSync_ProcessqueueTest extends \CRM_MemrelTest implements Head
       ));
     }
 
-    $queue = civicrm_api3('MemRelSync', 'createqueue', array());
+    $queue = civicrm_api3('MemRelSync', 'createqueue', array(
+      'rel_type_id' => array(
+        $this->getRelTypeId('test_admin'),
+        $this->getRelTypeId('test_exec'),
+      ),
+    ));
     $this->assertEquals($this->numberOfDummyRelationships, $queue['count']);
 
     parent::setUp();

@@ -20,7 +20,7 @@ class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements Headl
   }
 
   /**
-   * Test that a queue item is created for each qualified relationship.
+   * Test that a queue item is created for each specified relationship type.
    */
   public function test_success_createQueue() {
     list($a, $b) = $this->createContacts();
@@ -34,9 +34,19 @@ class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements Headl
       'contact_id_b' => $b,
       'relationship_type_id' => $this->getRelTypeId('test_exec'),
     ));
-    $expected = 2;
+    // note: this relationship should not be queued because of its type
+    $this->createRelationship(array(
+      'contact_id_a' => $a,
+      'contact_id_b' => $b,
+      'relationship_type_id' => $this->getRelTypeId('test_secretary'),
+    ));
 
-    $test = civicrm_api3('MemRelSync', 'CreateQueue', array());
+    $expected = 2;
+    $test = civicrm_api3('MemRelSync', 'createqueue', array(
+      'rel_type_id' => array(
+        $this->getRelTypeId('test_admin'),
+        $this->getRelTypeId('test_exec')),
+    ));
     // tests custom logic around calculating the count
     $this->assertEquals($expected, $test['count']);
 
