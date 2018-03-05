@@ -12,9 +12,12 @@ return array (
     array (
       'version' => 3,
       'name' => 'Membership by Relationship: Populate queue',
-      'description' => 'A memory-intensive process to prepare a queue of contact
-        pairs to evaluate for shadow relationships that need occur only on
-        extension install or reconfigure',
+      'description' => 'Prepares a queue of relationships to be evaluated later
+        for membership conferment. Because it is expected to be a
+        memory-intensive process, it is recommended for use on the command line
+        interface only. This API should not need to be used except when
+        membership type configuration is changed in a way not currently
+        supported by CiviCRM (e.g., after installation of this extension).',
       'run_frequency' => 'Yearly',
       'api_entity' => 'MemRelSync',
       'api_action' => 'createqueue',
