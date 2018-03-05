@@ -21,14 +21,14 @@ On installation, this extension modifies membership types:
 
 setting their conferment relationship types to the following selection:
 
-- Employee Of
-- Administrative Staff Member of
-- Board Member of
-- Chief Administrative Director of
-- Chief Artistic Leader of
-- Board President/Chairman of
-- Artistic Staff Member of
-- Primary Contact
+- Employer Of
+- Has an Administrative staff member
+- Has a Board member
+- Has as Chief Administrative Director
+- Has as Chief Artistic Leader
+- Has as Board President/Chairman
+- Has an Artistic staff member
+- Has a Primary Contact
 
 ### Bulk Actions
 
