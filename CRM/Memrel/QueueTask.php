@@ -32,10 +32,8 @@ class CRM_Memrel_QueueTask {
   public $title = NULL;
 
   /**
-   * @param int|string $contactIdA
-   *   Contact ID to evaluate for relationship shadowing.
-   * @param int|string $contactIdB
-   *   Contact ID to evaluate for relationship shadowing.
+   * @param int|string $relationshipId
+   *   Relationship ID to "kick" for possible membership conferment.
    */
   public function __construct($relationshipId) {
     $this->relationshipId = CRM_Utils_Type::validate($relationshipId, 'Int');
