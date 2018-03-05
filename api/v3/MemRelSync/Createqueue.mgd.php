@@ -13,11 +13,7 @@ return array (
       'version' => 3,
       'name' => 'Membership by Relationship: Populate queue',
       'description' => 'Prepares a queue of relationships to be evaluated later
-        for membership conferment. Because it is expected to be a
-        memory-intensive process, it is recommended for use on the command line
-        interface only. This API should not need to be used except when
-        membership type configuration is changed in a way not currently
-        supported by CiviCRM (e.g., after installation of this extension).',
+        for membership conferment. Recommended for CLI only; see README.md.',
       'run_frequency' => 'Yearly',
       'api_entity' => 'MemRelSync',
       'api_action' => 'createqueue',
