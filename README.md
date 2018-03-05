@@ -49,8 +49,16 @@ See the API explorer for usage details.
 
 #### api.MemRelSync.processqueue
 
-Triggers the creation of indirect memberships where conferment relationships
-exist. This API takes a parameter `max_run_time` which limits the amount of time
+Triggers the *creation* of indirect memberships where conferment relationships
+exist.
+
+Note: this extension *will not delete* no-longer-valid indirect memberships --
+e.g., if the "Employee of" conferment relationship configuration is removed from
+a membership type X, contacts who held a membership X by virtue of their
+employment will continue to do so after this API is run. Addressing that use
+case is outside the scope of this extension.
+
+This API takes a parameter `max_run_time` which limits the amount of time
 (default: 30 sec) it will spend processing queued items; a system administrator
 can set this below the timeout threshold, making it safe for use as a scheduled
 job.
