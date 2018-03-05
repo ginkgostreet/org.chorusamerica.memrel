@@ -2,24 +2,27 @@
 
 /**
  * Task class for this extension's queue.
+ *
+ * Loads and saves a given relationship (without changes) to trigger
+ * CRM_Contact_BAO_Relationship::relatedMemberships(), which is responsible for
+ * conferring membership. This indirect approach is preferable to invoking the
+ * static method directly because:
+ *
+ * 1) CRM_Contact_BAO_Relationship::relatedMemberships() is not a supported
+ *    extension point, and we have no "contract" with CiviCRM that it will not
+ *    change or even be removed.
+ * 2) The parameters for CRM_Contact_BAO_Relationship::relatedMemberships() are
+ *    not well documented. "Kicking" the relationship with an otherwise
+ *    pointless update is easier.
  */
 class CRM_Memrel_QueueTask {
 
   /**
-   * The first of two contact IDs to evaluate for a shadow relationship. Order
-   * is insignificant.
+   * The ID of the relationship to "kick."
    *
    * @var int|string
    */
-  private $contactIdA;
-
-  /**
-   * The second of two contact IDs to evaluate for a shadow relationship. Order
-   * is insignificant.
-   *
-   * @var int|string
-   */
-  private $contactIdB;
+  private $relationshipId;
 
   /**
    * A printable string which describes this task.
@@ -34,10 +37,9 @@ class CRM_Memrel_QueueTask {
    * @param int|string $contactIdB
    *   Contact ID to evaluate for relationship shadowing.
    */
-  public function __construct($contactIdA, $contactIdB) {
-    $this->contactIdA = $contactIdA;
-    $this->contactIdB = $contactIdB;
-    $this->title = "Evaluating contacts $contactIdA and $contactIdB";
+  public function __construct($relationshipId) {
+    $this->relationshipId = CRM_Utils_Type::validate($relationshipId, 'Int');
+    $this->title = "Kick relationship ID {$this->relationshipId} to trigger membership conferment behavior";
   }
 
   /**
@@ -49,7 +51,17 @@ class CRM_Memrel_QueueTask {
    *   TRUE if task completes successfully
    */
   public function run(CRM_Queue_TaskContext $taskCtx) {
-    CRM_Memrel_Conferment::doSync($this->contactIdA, $this->contactIdB);
+    try {
+      civicrm_api3('Relationship', 'getsingle', array(
+        'id' => $this->relationshipId,
+        'api.relationship.create' => array(),
+      ));
+    }
+    catch (Exception $ex) {
+      // Nothing to do here. If the API call fails it probably means the
+      // relationship has been deleted since being enqueued, which means any
+      // conferring memberships would have been deleted along with it.
+    }
     return TRUE;
   }
 
