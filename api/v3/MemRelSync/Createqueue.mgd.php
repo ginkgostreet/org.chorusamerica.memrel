@@ -18,7 +18,7 @@ return array (
       'api_entity' => 'MemRelSync',
       'api_action' => 'createqueue',
       'is_active' => 0,
-      'parameters' => '',
+      'parameters' => 'rel_type_id = [3,5,7,etc.]',
     ),
   ),
 );
