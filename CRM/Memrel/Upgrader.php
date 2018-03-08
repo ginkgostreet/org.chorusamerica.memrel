@@ -41,6 +41,16 @@ class CRM_Memrel_Upgrader extends CRM_Memrel_Upgrader_Base {
         ),
       ));
     }
+
+    civicrm_api3('MembershipType', 'create', array(
+      'id' => 11, // Library Subscription
+      'relationship_type_id' => array(
+        36, // Has a Library Guest User (IP access) of
+      ),
+      'relationship_direction' => array(
+        'b_a', // Has a Library Guest User (IP access) of
+      ),
+    ));
   }
 
 }
