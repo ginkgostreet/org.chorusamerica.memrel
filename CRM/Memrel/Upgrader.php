@@ -53,4 +53,44 @@ class CRM_Memrel_Upgrader extends CRM_Memrel_Upgrader_Base {
     ));
   }
 
+  /**
+   * Change definition for non-chorus organization membership types in version
+   * 1.1 due to spec change.
+   *
+   * Unceremoniously copy/pasted from reconfigureMembershipConferment(), with edits.
+   *
+   * @return boolean TRUE
+   */
+  public function upgrade_1100() {
+    $membershipTypeIds = array(
+      6, // Business Member
+      7, // Affiliate Organization Member
+    );
+
+    foreach ($membershipTypeIds as $id) {
+      civicrm_api3('MembershipType', 'create', array(
+        'id' => $id,
+        'relationship_type_id' => array(
+          4, // Employer Of
+          11, // Has an Administrative staff member
+          13, // Has as Chief Administrative Director
+          14, // Has as Chief Artistic Leader
+          19, // Has an Artistic staff member
+          32, // Has a Primary Contact
+        ),
+        'relationship_direction' => array(
+          'b_a', // Employer Of
+          'b_a', // Has an Administrative staff member
+          'b_a', // Has as Chief Administrative Director
+          'b_a', // Has as Chief Artistic Leader
+          'b_a', // Has an Artistic staff member
+          'b_a', // Has a Primary Contact
+        ),
+      ));
+    }
+
+    // return TRUE to keep the upgrader happy (we don't anticipate this would ever fail)
+    return TRUE;
+  }
+
 }

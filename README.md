@@ -30,6 +30,20 @@ setting their conferment relationship types to the following selection:
 - Has an Artistic staff member
 - Has a Primary Contact
 
+On upgrade to version 1.1, this extension modifies membership types:
+
+- Business Member
+- Affiliate Organization Member
+
+setting their conferment relationship types to the following selection:
+
+- Employer Of
+- Has an Administrative staff member
+- Has as Chief Administrative Director
+- Has as Chief Artistic Leader
+- Has an Artistic staff member
+- Has a Primary Contact
+
 ### Bulk Actions
 
 Updating the membership types is not a sufficient trigger for creating the
