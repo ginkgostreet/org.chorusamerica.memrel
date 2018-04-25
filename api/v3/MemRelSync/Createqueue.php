@@ -29,19 +29,38 @@ function _civicrm_api3_mem_rel_sync_createqueue_spec(&$spec) {
  * @return array API result descriptor
  * @see civicrm_api3_create_success
  * @see civicrm_api3_create_error
- * @throws API_Exception
+ * @throws \CRM_Core_Exception
  */
 function civicrm_api3_mem_rel_sync_createqueue($params) {
-  $api = civicrm_api3('Relationship', 'get', array(
-    'options' => array('limit' => 0),
-    'relationship_type_id' => array('IN' => (array) $params['rel_type_id']),
-    'return' => array('id'),
-  ));
+  // Let's be paranoid about SQL injection. Make sure we've got an array of integers.
+  $relTypeIds = (array) $params['rel_type_id'];
+  foreach ($relTypeIds as $id) {
+    // Throws exception for invalid parameters.
+    CRM_Utils_Type::validate($id, 'Int', TRUE, 'One of the relationship type IDs', TRUE);
+  }
+  // End paranoia.
+
+  $query = '
+    SELECT r.id FROM civicrm_contact conferee
+    -- limit selection of conferee contacts to those with conferring relationships
+    INNER JOIN civicrm_relationship r
+    ON r.contact_id_a = conferee.id -- all the membership types are configured to confer to the "A" contact
+    AND r.relationship_type_id IN (' . implode(', ', $relTypeIds) . ')
+    -- limit selection to contacts with a relationship to a current member
+    INNER JOIN civicrm_membership m_conferer
+    ON r.contact_id_b = m_conferer.contact_id  -- all the membership types are configured to confer from the "B" contact
+    AND m_conferer.status_id IN (1, 2, 3)
+    -- exclude contacts who already have conferred memberships
+    LEFT JOIN civicrm_membership m_conferee
+    ON m_conferee.contact_id = conferee.id
+    AND m_conferee.owner_membership_id = m_conferer.id
+    WHERE m_conferee.id IS NULL';
+  $result = CRM_Core_DAO::executeQuery($query);
 
   $cnt = 0; // used to override the default API count output
   $queue = CRM_Memrel_QueueManager::singleton()->getQueue();
-  foreach ($api['values'] as $data) {
-    $task = new CRM_Memrel_QueueTask($data['id']);
+  while ($result->fetch()) {
+    $task = new CRM_Memrel_QueueTask($result->id);
     $queue->createItem($task);
     $cnt++;
   }

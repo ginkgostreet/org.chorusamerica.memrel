@@ -10,6 +10,8 @@ use Civi\Test\TransactionalInterface;
  */
 class api_v3_MemRelSync_ProcessqueueTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
 
+  protected $membershipTypeId;
+
   /**
    * Number of dummy relationships to create on setup.
    *
@@ -26,9 +28,17 @@ class api_v3_MemRelSync_ProcessqueueTest extends \CRM_MemrelTest implements Head
   public function setUp() {
     $this->createRelationshipType('test_admin');
     $this->createRelationshipType('test_exec');
+    $this->membershipTypeId = $this->createMembershipType();
 
     for ($i = 0; $i < $this->numberOfDummyRelationships; $i += 2) {
       list($a, $b) = $this->createContacts();
+      // Contact B must be a member for the associated relationships to enqueue.
+      civicrm_api3('Membership', 'create', array(
+        'membership_type_id' => $this->membershipTypeId,
+        'contact_id' => $b,
+        'status_id' => 'New',
+      ));
+
       $this->createRelationship(array(
         'contact_id_a' => $a,
         'contact_id_b' => $b,

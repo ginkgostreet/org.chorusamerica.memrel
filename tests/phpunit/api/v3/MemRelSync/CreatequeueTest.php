@@ -10,6 +10,8 @@ use Civi\Test\TransactionalInterface;
  */
 class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements HeadlessInterface, TransactionalInterface {
 
+  protected $membershipTypeId;
+
   /**
    * The setup() method is executed before the test is executed (optional).
    */
@@ -17,6 +19,7 @@ class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements Headl
     $this->createRelationshipType('test_admin');
     $this->createRelationshipType('test_exec');
     $this->createRelationshipType('test_secretary');
+    $this->membershipTypeId = $this->createMembershipType();
   }
 
   /**
@@ -24,6 +27,13 @@ class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements Headl
    */
   public function test_success_multipleTypes_createQueue() {
     list($a, $b) = $this->createContacts();
+    // Contact B must be a member for the associated relationships to enqueue.
+    civicrm_api3('Membership', 'create', array(
+      'membership_type_id' => $this->membershipTypeId,
+      'contact_id' => $b,
+      'status_id' => 'New',
+    ));
+
     $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,
@@ -71,6 +81,13 @@ class api_v3_MemRelSync_CreatequeueTest extends \CRM_MemrelTest implements Headl
    */
   public function test_success_paramAsScalar_createQueue() {
     list($a, $b) = $this->createContacts();
+    // Contact B must be a member for the associated relationships to enqueue.
+    civicrm_api3('Membership', 'create', array(
+      'membership_type_id' => $this->membershipTypeId,
+      'contact_id' => $b,
+      'status_id' => 'New',
+    ));
+
     $this->createRelationship(array(
       'contact_id_a' => $a,
       'contact_id_b' => $b,

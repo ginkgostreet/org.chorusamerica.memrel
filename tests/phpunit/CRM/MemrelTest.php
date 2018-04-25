@@ -86,6 +86,34 @@ class CRM_MemrelTest extends \PHPUnit_Framework_TestCase {
   }
 
   /**
+   * Helper function which creates a membership type.
+   *
+   * @return string
+   *   ID of created membership type.
+   */
+  protected function createMembershipType() {
+    $api = civicrm_api3('MembershipType', 'create', array(
+      'domain_id' => 1,
+      'member_of_contact_id' => 1,
+      'financial_type_id' => 'Member Dues',
+      'duration_unit' => 'year',
+      'duration_interval' => 1,
+      'period_type' => 'rolling',
+      'name' => 'Unit testing membership',
+      'relationship_type_id' => array(
+        $this->getRelTypeId('test_admin'),
+        $this->getRelTypeId('test_exec'),
+      ),
+      'relationship_direction' => array(
+        // Contact B confers membership to Contact A
+        'b_a',
+        'b_a',
+      ),
+    ));
+    return $api['id'];
+  }
+
+  /**
    * Helper function to create test data.
    *
    * Creates relationship types with the same name for both directions.
