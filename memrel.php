@@ -27,7 +27,13 @@ function memrel_civicrm_xmlMenu(&$files) {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_install
  */
 function memrel_civicrm_install() {
-  _memrel_civix_civicrm_install();
+  // Don't go through install/upgrade procedures when running unit tests, as
+  // these contain hardcoded references to entities in Chorus America's
+  // production instance (the absence of which will raise errors) that are not
+  // needed for running the tests.
+  if (CIVICRM_UF !== 'UnitTests') {
+    _memrel_civix_civicrm_install();
+  }
 }
 
 /**
@@ -72,7 +78,13 @@ function memrel_civicrm_disable() {
  * @link http://wiki.civicrm.org/confluence/display/CRMDOC/hook_civicrm_upgrade
  */
 function memrel_civicrm_upgrade($op, CRM_Queue_Queue $queue = NULL) {
-  return _memrel_civix_civicrm_upgrade($op, $queue);
+  // Don't go through install/upgrade procedures when running unit tests, as
+  // these contain hardcoded references to entities in Chorus America's
+  // production instance (the absence of which will raise errors) that are not
+  // needed for running the tests.
+  if (CIVICRM_UF !== 'UnitTests') {
+    return _memrel_civix_civicrm_upgrade($op, $queue);
+  }
 }
 
 /**

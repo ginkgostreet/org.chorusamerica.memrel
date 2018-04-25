@@ -44,6 +44,11 @@ setting their conferment relationship types to the following selection:
 - Has an Artistic staff member
 - Has a Primary Contact
 
+Note: These install/upgrade-based modifications are bypassed when running unit
+tests, as they contain hardcoded references to entities in Chorus America's
+production instance (the absence of which will raise errors) that are not needed
+for running the tests.
+
 ### Bulk Actions
 
 Updating the membership types is not a sufficient trigger for creating the
@@ -136,3 +141,8 @@ $ cd /path/to/extension
 $ export CIVICRM_SETTINGS=/path/to/civicrm.settings.php
 $ phpunit4 --group headless
 ```
+
+Note: The extension's install/upgrade-based database modifications are bypassed
+when running unit tests, as they contain hardcoded references to entities in
+Chorus America's production instance (the absence of which will raise errors)
+that are not needed for running the tests.
