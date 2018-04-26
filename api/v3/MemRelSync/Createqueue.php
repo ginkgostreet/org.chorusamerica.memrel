@@ -45,6 +45,7 @@ function civicrm_api3_mem_rel_sync_createqueue($params) {
     -- limit selection of conferee contacts to those with conferring relationships
     INNER JOIN civicrm_relationship r
     ON r.contact_id_a = conferee.id -- all the membership types are configured to confer to the "A" contact
+    AND r.is_active = 1
     AND r.relationship_type_id IN (' . implode(', ', $relTypeIds) . ')
     -- limit selection to contacts with a relationship to a current member
     INNER JOIN civicrm_membership m_conferer
