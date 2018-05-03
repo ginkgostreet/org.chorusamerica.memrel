@@ -47,19 +47,25 @@ class CRM_Memrel_QueueTask {
    *   Not sure why the task runner wants to pass this... for logging, perhaps.
    * @return bool
    *   TRUE if task completes successfully
+   * @throws CiviCRM_API3_Exception
    */
   public function run(CRM_Queue_TaskContext $taskCtx) {
-    try {
-      civicrm_api3('Relationship', 'getsingle', array(
-        'id' => $this->relationshipId,
-        'api.relationship.create' => array(),
-      ));
-    }
-    catch (Exception $ex) {
-      // Nothing to do here. If the API call fails it probably means the
-      // relationship has been deleted since being enqueued, which means any
-      // conferring memberships would have been deleted along with it.
-    }
+    $rel = civicrm_api3('Relationship', 'getsingle', array(
+      'id' => $this->relationshipId,
+    ));
+
+    // To really "kick" the relationship in the hopes that membership conferment
+    // will be triggered, we first disable it...
+    $rel['is_active'] = 0;
+    civicrm_api3('Relationship', 'create', $rel);
+
+    // ... then reenable it
+    $rel['is_active'] = 1;
+    civicrm_api3('Relationship', 'create', $rel);
+
+    // If any of the API calls fail, an exception will be raised. Such an
+    // exception would be handled by CRM_Queue_Runner. If an exception is not
+    // raised, we assume success.
     return TRUE;
   }
 
