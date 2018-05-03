@@ -55,6 +55,7 @@ function civicrm_api3_mem_rel_sync_createqueue($params) {
     LEFT JOIN civicrm_membership m_conferee
     ON m_conferee.contact_id = conferee.id
     AND m_conferee.owner_membership_id = m_conferer.id
+    AND m_conferee.status_id = m_conferer.status_id
     WHERE m_conferee.id IS NULL';
   $result = CRM_Core_DAO::executeQuery($query);
 
